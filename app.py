@@ -4,11 +4,14 @@ import io
 import re
 import time
 from datetime import datetime
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_from_directory
 from dotenv import load_dotenv
 from PIL import Image, ImageEnhance
 import pypdf
 import google.generativeai as genai
+
+# Base directory for resolving templates and static assets
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Load environment variables
 load_dotenv()
@@ -18,7 +21,7 @@ gemini_api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_
 gemini_api_key = gemini_api_key.strip()
 
 if not gemini_api_key:
-    env_path = os.path.join(os.path.dirname(__file__), ".env")
+    env_path = os.path.join(BASE_DIR, ".env")
     if os.path.exists(env_path):
         with open(env_path, "r", encoding="utf-8") as f:
             for line in f:
@@ -34,8 +37,17 @@ if gemini_api_key:
     genai.configure(api_key=gemini_api_key)
 
 # Initialize Flask app
-app = Flask(__name__, template_folder="templates", static_folder="static")
+app = Flask(
+    __name__,
+    template_folder=os.path.join(BASE_DIR, "templates"),
+    static_folder=os.path.join(BASE_DIR, "static"),
+    static_url_path="/static"
+)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB max upload size
+
+@app.route('/static/<path:filename>')
+def serve_static(filename):
+    return send_from_directory(os.path.join(BASE_DIR, 'static'), filename)
 
 # Verified fast Gemini models
 GEMINI_MODELS = [
