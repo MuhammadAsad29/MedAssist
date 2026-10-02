@@ -72,26 +72,27 @@ Generates 4 tailored clinical advice categories based on identified abnormalitie
 ```mermaid
 flowchart TD
     subgraph Client["1. Modern Web Frontend"]
-        A[User Upload: Image / PDF / Sample Report] --> B[Language Selector: EN / UR / Roman Urdu]
+        A["User Upload: Image / PDF / Sample Report"] --> B["Language Selector: EN / UR / Roman Urdu"]
     end
 
     subgraph Backend["2. Flask Serverless Core (app.py)"]
-        B --> C{File Type?}
-        C -->|PDF| D[pypdf Text & Metadata Extraction]
-        C -->|Image| E[Pillow Image Preprocessing & Optimization]
-        D & E --> F[Prompt & Multi-Lingual Injection]
+        B --> C{"File Type?"}
+        C -->|PDF| D["pypdf Text & Metadata Extraction"]
+        C -->|Image| E["Pillow Image Preprocessing & Optimization"]
+        D --> F["Prompt & Multi-Lingual Injection"]
+        E --> F
     end
 
     subgraph AI_Engine["3. Multimodal Reasoning (Google Gemini)"]
-        F --> G[Gemini 3.5 / 3.8 Flash Vision Engine]
-        G --> H[Strict Structured JSON Response]
+        F --> G["Gemini 3.5 / 3.8 Flash Vision Engine"]
+        G --> H["Strict Structured JSON Response"]
     end
 
     subgraph Presentation["4. Dashboard & Interactive Services"]
-        H --> I[Structured Test Table & Severity Badges]
-        H --> J[4-Tier Personalized Recommendation Cards]
-        H --> K[Context-Aware Medical AI Chatbot (/api/chat)]
-        H --> L[Downloadable / Printable Clinical PDF]
+        H --> I["Structured Test Table & Severity Badges"]
+        H --> J["4-Tier Personalized Recommendation Cards"]
+        H --> K["Context-Aware Medical AI Chatbot (/api/chat)"]
+        H --> L["Downloadable / Printable Clinical PDF"]
     end
 ```
 
