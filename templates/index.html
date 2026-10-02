@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Medical Lab Reports Analyzer & Assistant</title>
+    <meta name="description" content="AI-Powered Medical Lab Report Analyzer - Extract, structure, and understand blood tests, lipid profiles, and metabolic panels in English, Urdu, and Roman Urdu.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Nastaliq+Urdu:wght@400;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="theme-light">
+    <!-- Navigation Bar -->
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="brand">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-heart-pulse"></i>
+                </div>
+                <div class="brand-text">
+                    <span class="brand-title">MedAssist<span class="accent">AI</span></span>
+                    <span class="brand-subtitle">Clinical Lab Report Analyzer & Assistant</span>
+                </div>
+            </div>
+            <div class="nav-actions">
+                <!-- Language Selector -->
+                <div class="language-selector-wrapper">
+                    <i class="fa-solid fa-language lang-icon"></i>
+                    <select id="languageSelect" class="lang-select" title="Choose Response Language">
+                        <option value="en" selected>🇬🇧 English</option>
+                        <option value="roman_ur">🗣️ Roman Urdu</option>
+                        <option value="ur">🇵🇰 اردو (Urdu)</option>
+                    </select>
+                </div>
+
+                <div class="api-status-badge" id="apiStatusBadge">
+                    <span class="status-dot online"></span>
+                    <span class="status-text">Gemini AI Ready</span>
+                </div>
+
+                <button class="theme-toggle-btn" id="themeToggleBtn" aria-label="Toggle Theme" title="Toggle Dark/Light Mode">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="main-content">
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <div class="badge-pill">
+                <i class="fa-solid fa-brain"></i> Powered by Google Gemini 3.5/3.8 Flash (Multilingual Vision AI)
+            </div>
+            <h1 class="hero-title">Translate Complex Lab Reports into <span class="gradient-text">Personalized Health Guidance</span></h1>
+            <p class="hero-subtitle">Upload your scanned lab report or try instant sample reports. Get automated metric extraction, personalized doctor & dietary recommendations, and chat directly with AI in <strong>English</strong>, <strong>Urdu</strong>, or <strong>Roman Urdu</strong>.</p>
+        </section>
+
+        <!-- Upload & Sample Testing Section -->
+        <section class="upload-section">
+            <!-- 1-Click Sample Reports Bar -->
+            <div class="sample-bar">
+                <span class="sample-bar-label"><i class="fa-solid fa-flask"></i> Quick Test with Sample Reports:</span>
+                <div class="sample-buttons">
+                    <button class="sample-btn" data-sample="cbc">
+                        <i class="fa-solid fa-droplet text-red"></i> Anemia Panel (CBC)
+                    </button>
+                    <button class="sample-btn" data-sample="lipid">
+                        <i class="fa-solid fa-heart text-amber"></i> Lipid & Metabolic
+                    </button>
+                    <button class="sample-btn" data-sample="liver_thyroid">
+                        <i class="fa-solid fa-dna text-blue"></i> Thyroid & Liver (LFT)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Upload Card -->
+            <div class="upload-card" id="uploadCard">
+                <input type="file" id="fileInput" accept=".jpg,.jpeg,.png,.webp,.bmp,.pdf" hidden>
+                <div class="drop-zone" id="dropZone">
+                    <div class="drop-icon">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                    </div>
+                    <h3 class="drop-title">Drag & drop your medical report here</h3>
+                    <p class="drop-subtitle">Supports <strong>JPEG, PNG, WEBP, or PDF</strong> (Max 16 MB)</p>
+                    <button class="btn btn-primary" id="browseBtn">
+                        <i class="fa-solid fa-folder-open"></i> Browse File
+                    </button>
+                </div>
+
+                <!-- Selected File Preview Bar -->
+                <div class="file-preview-bar" id="filePreviewBar" style="display: none;">
+                    <div class="file-info">
+                        <i class="fa-solid fa-file-medical file-type-icon" id="fileTypeIcon"></i>
+                        <div class="file-details">
+                            <span class="file-name" id="fileName">report.png</span>
+                            <span class="file-size" id="fileSize">1.2 MB</span>
+                        </div>
+                    </div>
+                    <div class="file-actions">
+                        <button class="btn btn-outline" id="removeFileBtn" title="Remove File">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                        <button class="btn btn-success" id="analyzeBtn">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> Analyze Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading Spinner State -->
+            <div class="loading-state" id="loadingState" style="display: none;">
+                <div class="pulse-loader">
+                    <div class="pulse-ring"></div>
+                    <i class="fa-solid fa-stethoscope"></i>
+                </div>
+                <h3 class="loading-title" id="loadingStepTitle">Analyzing Medical Lab Report with Gemini AI...</h3>
+                <p class="loading-desc" id="loadingStepDesc">Extracting clinical metrics, analyzing ranges, and formulating personalized recommendations.</p>
+                <div class="loading-steps">
+                    <div class="step-item active" id="step1"><i class="fa-solid fa-circle-check"></i> OCR & Vision Extraction</div>
+                    <div class="step-item active" id="step2"><i class="fa-solid fa-circle-check"></i> Multi-lingual Translation</div>
+                    <div class="step-item active" id="step3"><i class="fa-solid fa-spinner fa-spin"></i> Generating Medical Advice</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Analysis Results Dashboard (Hidden until analyzed) -->
+        <section class="results-dashboard" id="resultsDashboard" style="display: none;">
+            
+            <!-- Dashboard Action Header -->
+            <div class="results-header-bar">
+                <div class="results-title-group">
+                    <h2 class="section-title"><i class="fa-solid fa-clipboard-check text-blue"></i> Lab Analysis Report</h2>
+                    <span class="report-timestamp" id="reportGeneratedAt">Generated on: Oct 2, 2026</span>
+                </div>
+                <div class="results-action-buttons">
+                    <button class="btn btn-secondary" id="openChatBtn">
+                        <i class="fa-solid fa-comments"></i> Chat with AI About Report
+                    </button>
+                    <button class="btn btn-outline" id="printReportBtn">
+                        <i class="fa-solid fa-print"></i> Print / Download PDF
+                    </button>
+                    <button class="btn btn-primary" id="newReportBtn">
+                        <i class="fa-solid fa-plus"></i> New Report
+                    </button>
+                </div>
+            </div>
+
+            <!-- Patient & Lab Metadata Card -->
+            <div class="patient-card">
+                <div class="patient-grid">
+                    <div class="patient-item">
+                        <span class="meta-label"><i class="fa-solid fa-user"></i> Patient Name</span>
+                        <span class="meta-value" id="patientName">--</span>
+                    </div>
+                    <div class="patient-item">
+                        <span class="meta-label"><i class="fa-solid fa-calendar-day"></i> Age & Gender</span>
+                        <span class="meta-value" id="patientDemographics">--</span>
+                    </div>
+                    <div class="patient-item">
+                        <span class="meta-label"><i class="fa-solid fa-calendar-check"></i> Report Date</span>
+                        <span class="meta-value" id="reportDate">--</span>
+                    </div>
+                    <div class="patient-item">
+                        <span class="meta-label"><i class="fa-solid fa-hospital"></i> Diagnostic Lab</span>
+                        <span class="meta-value" id="labName">--</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Risk Summary & Stats Grid -->
+            <div class="summary-grid">
+                <!-- Executive Health Summary -->
+                <div class="executive-summary-card">
+                    <div class="card-header">
+                        <div class="card-title"><i class="fa-solid fa-file-waveform"></i> Health Summary & Findings</div>
+                        <div class="risk-badge" id="riskBadge">Low Risk</div>
+                    </div>
+                    <p class="summary-paragraph" id="overallSummaryText">
+                        All measured lab parameters appear within standard clinical reference ranges.
+                    </p>
+                </div>
+
+                <!-- Metric Stat Counters -->
+                <div class="stats-card">
+                    <h3 class="stats-title"><i class="fa-solid fa-chart-pie"></i> Metric Breakdown</h3>
+                    <div class="stat-boxes">
+                        <div class="stat-box total">
+                            <span class="stat-num" id="totalTestsCount">0</span>
+                            <span class="stat-label">Total Tests</span>
+                        </div>
+                        <div class="stat-box normal">
+                            <span class="stat-num" id="normalTestsCount">0</span>
+                            <span class="stat-label">Normal</span>
+                        </div>
+                        <div class="stat-box abnormal">
+                            <span class="stat-num" id="abnormalTestsCount">0</span>
+                            <span class="stat-label">Abnormal</span>
+                        </div>
+                        <div class="stat-box critical">
+                            <span class="stat-num" id="criticalTestsCount">0</span>
+                            <span class="stat-label">Critical</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FEATURE 1: Comprehensive Personalized AI Suggestions & Recommendations Grid -->
+            <div class="recommendations-section">
+                <div class="section-header-box">
+                    <h3 class="section-title"><i class="fa-solid fa-user-doctor text-blue"></i> Personalized AI Clinical Recommendations & Advice</h3>
+                    <p class="section-subtitle-text">Customized guidance generated based on your specific abnormal and critical lab findings.</p>
+                </div>
+
+                <div class="recommendations-grid">
+                    <!-- 1. Diet & Nutrition Card -->
+                    <div class="rec-card diet-card">
+                        <div class="rec-card-header">
+                            <div class="rec-icon diet-icon"><i class="fa-solid fa-utensils"></i></div>
+                            <h4 class="rec-title">Dietary & Nutrition Advice</h4>
+                        </div>
+                        <ul class="rec-list" id="recDietList">
+                            <!-- Populated dynamically -->
+                        </ul>
+                    </div>
+
+                    <!-- 2. Specialist Consultation Card -->
+                    <div class="rec-card doctor-card">
+                        <div class="rec-card-header">
+                            <div class="rec-icon doctor-icon"><i class="fa-solid fa-stethoscope"></i></div>
+                            <h4 class="rec-title">Specialist Consultations</h4>
+                        </div>
+                        <ul class="rec-list" id="recDoctorList">
+                            <!-- Populated dynamically -->
+                        </ul>
+                    </div>
+
+                    <!-- 3. Follow-up Timeline Card -->
+                    <div class="rec-card followup-card">
+                        <div class="rec-card-header">
+                            <div class="rec-icon followup-icon"><i class="fa-solid fa-calendar-check"></i></div>
+                            <h4 class="rec-title">Follow-up & Repeat Tests</h4>
+                        </div>
+                        <ul class="rec-list" id="recFollowupList">
+                            <!-- Populated dynamically -->
+                        </ul>
+                    </div>
+
+                    <!-- 4. Warnings & Precautions Card -->
+                    <div class="rec-card warning-card">
+                        <div class="rec-card-header">
+                            <div class="rec-icon warning-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                            <h4 class="rec-title">Precautions & Red Flags</h4>
+                        </div>
+                        <ul class="rec-list" id="recWarningList">
+                            <!-- Populated dynamically -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Structured Tests Table & Filter Tabs -->
+            <div class="table-container-card">
+                <div class="table-header">
+                    <div class="table-title-group">
+                        <h3 class="table-title"><i class="fa-solid fa-table-list"></i> Structured Lab Test Results</h3>
+                        <p class="table-subtitle">Click any row or expander to view detailed clinical explanations.</p>
+                    </div>
+                    <div class="filter-tabs">
+                        <button class="filter-tab active" data-filter="all">All (<span id="tabAllCount">0</span>)</button>
+                        <button class="filter-tab" data-filter="abnormal">Abnormal & Critical (<span id="tabAbnormalCount">0</span>)</button>
+                        <button class="filter-tab" data-filter="normal">Normal (<span id="tabNormalCount">0</span>)</button>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="medical-table" id="medicalTable">
+                        <thead>
+                            <tr>
+                                <th>Test Description</th>
+                                <th>Measured Value</th>
+                                <th>Reference Range</th>
+                                <th>Status</th>
+                                <th>Explanation</th>
+                            </tr>
+                        </thead>
+                        <tbody id="testsTableBody">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Detailed Explanations Cards Section -->
+            <div class="explanations-section">
+                <h3 class="section-subtitle"><i class="fa-solid fa-book-medical"></i> Detailed Test-by-Test Explanations</h3>
+                <div class="explanations-accordion" id="explanationsAccordion">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <!-- Raw Extracted OCR Text Card (Collapsible) -->
+            <div class="raw-text-card">
+                <button class="raw-text-toggle" id="rawTextToggle">
+                    <span><i class="fa-solid fa-terminal"></i> View Raw Extracted OCR / Text Content</span>
+                    <i class="fa-solid fa-chevron-down toggle-arrow"></i>
+                </button>
+                <div class="raw-text-content" id="rawTextContent" style="display: none;">
+                    <pre><code id="rawTextCode">No raw text extracted.</code></pre>
+                </div>
+            </div>
+
+            <!-- Medical Disclaimer Footer -->
+            <div class="disclaimer-banner">
+                <div class="disclaimer-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                <div class="disclaimer-text" id="disclaimerText">
+                    <strong>Medical Disclaimer:</strong> This application is powered by Artificial Intelligence and is designed solely for informational, organizational, and educational purposes. It does not replace professional medical advice, clinical diagnosis, or personalized treatment planning by a certified healthcare professional.
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- FEATURE 3: Interactive Medical AI Chat Drawer / Modal -->
+    <div class="chat-drawer-backdrop" id="chatBackdrop" style="display: none;"></div>
+    <div class="chat-drawer" id="chatDrawer" style="display: none;">
+        <div class="chat-header">
+            <div class="chat-header-info">
+                <div class="chat-avatar">
+                    <i class="fa-solid fa-user-doctor"></i>
+                </div>
+                <div>
+                    <h3 class="chat-title">MedAssist AI Medical Chat</h3>
+                    <span class="chat-subtitle"><span class="status-dot online"></span> Context-aware with your report</span>
+                </div>
+            </div>
+            <button class="chat-close-btn" id="closeChatBtn" title="Close Chat">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <!-- Chat Quick Suggestion Chips -->
+        <div class="chat-chips-bar">
+            <button class="chat-chip" data-question="Mujhe in abnormal results ke liye kya diet leni chahiye?">🥗 Diet Advice</button>
+            <button class="chat-chip" data-question="Which specialist doctor should I consult for this report?">👨‍⚕️ Which Doctor?</button>
+            <button class="chat-chip" data-question="Is there any urgent danger or red flag in my test results?">⚠️ Any Danger?</button>
+            <button class="chat-chip" data-question="Explain all out of range tests in simple words.">📝 Explain Simply</button>
+        </div>
+
+        <!-- Chat Messages Body -->
+        <div class="chat-messages" id="chatMessages">
+            <div class="chat-bubble ai-bubble">
+                <div class="bubble-avatar"><i class="fa-solid fa-user-doctor"></i></div>
+                <div class="bubble-content">
+                    <p>Hello! I am your AI Medical Assistant. I have reviewed your lab test results. How can I help you understand your health report today?</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Input Bar -->
+        <div class="chat-input-bar">
+            <input type="text" id="chatInput" placeholder="Ask any question about your medical report..." autocomplete="off">
+            <button id="sendChatBtn" class="chat-send-btn" title="Send Question">
+                <i class="fa-solid fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Floating Chat Trigger Button -->
+    <button class="floating-chat-trigger" id="floatingChatBtn" style="display: none;" title="Chat with AI about your report">
+        <i class="fa-solid fa-comment-medical"></i>
+        <span class="trigger-label">Ask AI</span>
+    </button>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <p>&copy; 2026 MedAssist AI. Designed for accessible, multilingual, and fast healthcare comprehension.</p>
+        </div>
+    </footer>
+
+    <!-- Custom JavaScript -->
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

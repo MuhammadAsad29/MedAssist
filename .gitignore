@@ -1,0 +1,26 @@
+# Environments & Secrets
+.env
+.env.local
+code.txt
+*.key
+
+# Large Datasets (> 100MB GitHub limit)
+*.csv
+ai-medical-chatbot.csv
+healthcare_dataset.csv
+
+# Python bytecode & cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Virtual Environment
+.venv/
+venv/
+ENV/
+env/
+
+# OS files
+.DS_Store
+Thumbs.db
